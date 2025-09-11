@@ -5,9 +5,13 @@ import { Dancing_Script } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 
 import { isNil } from 'lodash-es';
-import { ChevronDown, Menu, Search, ShoppingCart, X } from 'lucide-react';
+import { Menu, Search, ShoppingCart } from 'lucide-react';
 
-import type { BottomMenuType, MenuType } from '@/types/type';
+import AsideMenuComponent from '@/components/layout/AsideMenuComponent';
+import type {
+  BottomMenuType,
+  MenuType,
+} from '@/types/type';
 
 const dancingScript = Dancing_Script({
   subsets: ['latin'],
@@ -19,13 +23,26 @@ type HeaderProps = {
   bottomMenuItems: BottomMenuType[];
 };
 
-const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
+const Header = ({
+  menuItems,
+  bottomMenuItems,
+}: HeaderProps) => {
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
+  const [isMenuOpen, setIsMenuOpen] =
+    useState<boolean>(false);
+  const [openSubMenuIndex, setOpenSubMenuIndex] = useState<
+    number | null
+  >(null);
+  const [hoveredMenu, setHoveredMenu] = useState<
+    number | null
+  >(null);
 
   const toggleSubmenu = (index: number) => {
-    if ((!isNil(openSubMenuIndex) && openSubMenuIndex !== index) || isNil(openSubMenuIndex)) {
+    if (
+      (!isNil(openSubMenuIndex) &&
+        openSubMenuIndex !== index) ||
+      isNil(openSubMenuIndex)
+    ) {
       setOpenSubMenuIndex(index);
       return;
     }
@@ -41,10 +58,112 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
     router.push('/login');
   };
 
+  const moveToMainPage = () => {
+    router.push('/');
+  };
+
   return (
     <>
-      {/* Header */}
-      <header className="relative bg-white border-b border-gray-200 z-40">
+      {/* Main Bar Header */}
+      <header
+        className={`hidden lg:block sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/5 backdrop-blur-sm hover:bg-white hover:shadow-lg`}
+        onMouseLeave={() => {
+          setHoveredMenu(null);
+        }}
+      >
+        <div className="mx-auto px-6">
+          <div className="flex items-center justify-between h-20">
+            <div className="flex flex-1 min-w-0">
+              <div className="flex items-center flex-shrink-0">
+                <h1
+                  className={`text-[52px] font-bold tracking-wider cursor-pointer text-gray-800 pb-[20px] transition-colors duration-300 ${dancingScript.className}`}
+                  onClick={moveToMainPage}
+                >
+                  gwana
+                </h1>
+              </div>
+
+              <div
+                className="flex items-center ml-8 lg:ml-12 xl:ml-16 2xl:ml-20"
+                style={{ gap: 'clamp(1rem, 6vw, 16rem)' }}
+              >
+                {menuItems.map(
+                  ({ name, hasSubmenu }, index) => (
+                    <div
+                      key={index}
+                      className="relative group"
+                      onMouseEnter={() => {
+                        if (!hasSubmenu) {
+                          setHoveredMenu(null);
+                        } else {
+                          setHoveredMenu(index);
+                        }
+                      }}
+                    >
+                      <button className="flex items-center text-[17px] space-x-1 py-6 text-sm font-semibold text-gray-800  hover:text-green-600 transition-colors duration-500">
+                        <span>{name}</span>
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+            <div className="flex items-center flex-shrink-0 space-x-1 lg:space-x-2">
+              <button className="text-gray-800 cursor-pointer hover:text-green-600 transition-colors p-3 lg:p-4 xl:p-5 duration-500">
+                <Search className="w-4 h-4 lg:w-5 lg:h-5" />
+              </button>
+              <button className="text-gray-800 cursor-pointer hover:text-green-600 transition-colors p-3 lg:p-4 xl:p-5 duration-500">
+                <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
+              </button>
+              <button
+                className="text-gray-800 cursor-pointer hover:bg-gray-100 p-2 lg:p-3 transition-colors duration-500 rounded-2xl whitespace-nowrap"
+                onClick={moveToLoginPage}
+              >
+                <span className="font-bold text-sm lg:text-base">
+                  로그인
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={`absolute left-0 right-0 bg-white border-t border-gray-100 shadow-xl transition-all duration-500 ease-in-out overflow-hidden origin-top ${
+            hoveredMenu !== null
+              ? 'scale-y-100 opacity-100 visible'
+              : 'scale-y-0 opacity-0 invisible'
+          }`}
+        >
+          <div className="mx-auto pl-80 px-6 py-8">
+            <div className="grid grid-cols-3 gap-12 w-[800px]">
+              {hoveredMenu !== null &&
+                menuItems[hoveredMenu].submenu.map(
+                  ({ category, items }, idx) => (
+                    <div key={idx}>
+                      <h3 className="font-semibold text-[18px] text-gray-900 mb-4">
+                        {category}
+                      </h3>
+                      <ul className="space-y-4 text-[15px]">
+                        {items.map((item, itemIdx) => (
+                          <li key={itemIdx}>
+                            <a
+                              href="#"
+                              className="text-sm text-gray-600 hover:text-green-600 transition-colors"
+                            >
+                              {item}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
+                )}
+            </div>
+          </div>
+        </div>
+      </header>
+      {/* Side - Header */}
+      <header className="sticky lg:hidden top-0 bg-white border-b border-gray-200 z-40">
         <div className="flex items-center justify-between px-4 py-3">
           {/* 햄버거 메뉴 버튼 */}
           <button
@@ -58,9 +177,10 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
           {/* 로고 */}
           <div className="absolute left-1/2 transform -translate-x-1/2">
             <h1
-              className={`text-2xl font-bold text-gray-900 font-kalam tracking-[5px] ${dancingScript.className}`}
+              className={`text-[42px] cursor-pointer pb-[20px] font-bold text-gray-900 font-kalam tracking-[5px] ${dancingScript.className}`}
+              onClick={moveToMainPage}
             >
-              Gwana
+              gwana
             </h1>
           </div>
 
@@ -70,105 +190,23 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
               <Search size={22} className="text-gray-700" />
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-md transition-colors">
-              <ShoppingCart size={22} className="text-gray-700" />
+              <ShoppingCart
+                size={22}
+                className="text-gray-700"
+              />
             </button>
           </div>
         </div>
       </header>
-
-      {/* 오버레이 */}
-      <div
-        className={`fixed inset-0 bg-gray-800 bg-opacity-5 z-45 transition-opacity duration-600 ${
-          isMenuOpen ? 'opacity-30 visible' : 'opacity-0 invisible'
-        }`}
+      <AsideMenuComponent
+        isMenuOpen={isMenuOpen}
+        moveToLoginPage={moveToLoginPage}
+        toggleMenu={toggleMenu}
+        toggleSubmenu={toggleSubmenu}
+        menuItems={menuItems}
+        bottomMenuItems={bottomMenuItems}
+        openSubMenuIndex={openSubMenuIndex}
       />
-
-      {/* 사이드바 메뉴 */}
-      <div
-        className={`fixed top-0 left-0 h-full w-[90%] bg-white z-50 transform transition-transform duration-600 ease-in-out ${
-          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } shadow-2xl flex flex-col`}
-      >
-        {/* 사이드바 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-          <button
-            className="flex items-center text-lg font-medium text-gray-900 hover:text-gray-600 transition-colors"
-            onClick={() => moveToLoginPage()}
-          >
-            <span>로그인</span>
-            <ChevronDown size={20} className="text-gray-400 ml-2 rotate-[-90deg]" />
-          </button>
-
-          <button
-            onClick={toggleMenu}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            aria-label="메뉴 닫기"
-          >
-            <X size={24} className="text-gray-700" />
-          </button>
-        </div>
-
-        {/* 메뉴 아이템들 */}
-        <div className="flex-1 overflow-y-auto sidebar-scroll min-h-0">
-          <div className="flex flex-col min-h-full">
-            <div className="py-2 flex-shrink-0">
-              {menuItems.map((item, index) => (
-                <div key={index} className="border-b border-gray-100 last:border-b-0">
-                  <button
-                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
-                    onClick={() => (item.hasSubmenu ? toggleSubmenu(index) : null)}
-                  >
-                    <span className="text-base font-medium text-gray-900">{item.name}</span>
-                    {item.hasSubmenu && (
-                      <ChevronDown
-                        size={20}
-                        className={`text-gray-400 transition-transform duration-600 ${
-                          openSubMenuIndex === index ? 'rotate-180' : ''
-                        }`}
-                      />
-                    )}
-                  </button>
-
-                  {/* 서브메뉴 */}
-                  {item.hasSubmenu && (
-                    <div
-                      className={`bg-gray-50 overflow-hidden transition-all duration-600 ease-in-out ${
-                        openSubMenuIndex === index ? 'max-h-48' : 'max-h-0'
-                      }`}
-                    >
-                      {item.subItems &&
-                        item.subItems.map((subItem, subIndex) => (
-                          <button
-                            key={subIndex}
-                            className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-                          >
-                            {subItem}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* 하단 메뉴 - 플렉스로 바닥에 배치 */}
-            <div className="flex-1"></div>
-            <div className="bg-gray-50 p-4 mx-4 rounded-lg mb-6 flex-shrink-0">
-              <div className="grid grid-cols-2 gap-3">
-                {bottomMenuItems.map((item, index) => (
-                  <button
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-                  >
-                    <span className="text-sm text-gray-700">{item.name}</span>
-                    <ChevronDown size={16} className="text-gray-400 rotate-[-90deg]" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 };

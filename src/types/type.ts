@@ -20,7 +20,10 @@ export type ReactHookFormEventType<T extends FieldValues> = {
 export type MenuType = {
   name: string;
   hasSubmenu: boolean;
-  subItems?: string[];
+  submenu: Array<{
+    category: string;
+    items: string[];
+  }>;
 };
 
 export type BottomMenuType = {

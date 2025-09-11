@@ -14,5 +14,5 @@
     "",
     "^[./]"
   ],
-  "printWidth": 80
+  "printWidth": 60
 }
