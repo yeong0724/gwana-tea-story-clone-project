@@ -43,10 +43,7 @@ const AsideMenuComponent = ({
             onClick={moveToLoginPage}
           >
             <span className="font-bold">로그인</span>
-            <ChevronDown
-              size={20}
-              className="text-gray-400 ml-2 rotate-[-90deg]"
-            />
+            <ChevronDown size={20} className="text-gray-400 ml-2 rotate-[-90deg]" />
           </button>
 
           <button
@@ -62,18 +59,13 @@ const AsideMenuComponent = ({
         <div className="flex-1 overflow-y-auto sidebar-scroll min-h-0">
           <div className="flex flex-col min-h-full">
             <div className="py-2 flex-shrink-0">
-              {menuItems.map(({ hasSubmenu, name, submenu }, index) => (
-                <div
-                  key={index}
-                  className="border-b border-gray-100 last:border-b-0"
-                >
+              {menuItems.map(({ hasSubmenu, name, submenu, url }, index) => (
+                <div key={index} className="border-b border-gray-100 last:border-b-0">
                   <button
                     className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
                     onClick={() => (hasSubmenu ? toggleSubmenu(index) : null)}
                   >
-                    <span className="text-base font-medium text-gray-900">
-                      {name}
-                    </span>
+                    <span className="text-base font-medium text-gray-900">{name}</span>
                     {hasSubmenu && (
                       <ChevronDown
                         size={20}
@@ -91,10 +83,13 @@ const AsideMenuComponent = ({
                         openSubMenuIndex === index ? 'max-h-48' : 'max-h-0'
                       }`}
                     >
-                      {submenu.map(({ category }, subIndex) => (
+                      {submenu.map(({ category, items }, subIndex) => (
                         <button
                           key={subIndex}
-                          className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                          onClick={() => {
+                            toggleSubmenu(subIndex);
+                          }}
                         >
                           {category}
                         </button>
@@ -115,10 +110,7 @@ const AsideMenuComponent = ({
                     className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
                   >
                     <span className="text-sm text-gray-700">{item.name}</span>
-                    <ChevronDown
-                      size={16}
-                      className="text-gray-400 rotate-[-90deg]"
-                    />
+                    <ChevronDown size={16} className="text-gray-400 rotate-[-90deg]" />
                   </button>
                 ))}
               </div>

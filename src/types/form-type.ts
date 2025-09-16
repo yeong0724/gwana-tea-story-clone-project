@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { pwdSpecialCharValidate } from '@/lib/utils';
 
 export const userAccountSchema = z.object({
-  email: z.email({
+  username: z.email({
     pattern: z.regexes.html5Email,
     error: '올바르지 않은 이메일 형식입니다',
   }),
@@ -22,3 +22,8 @@ export const userAccountSchema = z.object({
 });
 
 export type UserAccountInfo = z.infer<typeof userAccountSchema>;
+
+// UserAccountInfo 타입에서 자동으로 enum을 생성하는 유틸리티 타입
+export type FormFieldsEnum<T> = {
+  [K in keyof T as Uppercase<string & K>]: K;
+};

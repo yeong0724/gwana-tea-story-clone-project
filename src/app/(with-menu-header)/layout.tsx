@@ -1,25 +1,81 @@
 import Header from '@/components/layout/Header';
-import type {
-  BottomMenuType,
-  MenuType,
-} from '@/types/type';
+import type { BottomMenuType, MenuType } from '@/types/type';
 
-const menuItems: MenuType[] = [
+export const menuItems: MenuType[] = [
   {
-    name: '제품',
+    name: '티 제품',
+    url: '/product',
     hasSubmenu: true,
     submenu: [
       {
         category: '녹차',
-        items: ['Tea', 'Tea Food', 'Life Style'],
+        categoryCode: 'GREEN',
+        items: [
+          {
+            submenuName: '우전',
+            submenuCode: 'A',
+          },
+          {
+            submenuName: '세작',
+            submenuCode: 'B',
+          },
+          {
+            submenuName: '중작',
+            submenuCode: 'C',
+          },
+          {
+            submenuName: '대작',
+            submenuCode: 'D',
+          },
+        ],
       },
       {
         category: '발효차',
-        items: ['Tea', 'Tea Food', 'Life Style'],
+        categoryCode: 'RED',
+        items: [
+          {
+            submenuName: '스트레이트 티',
+            submenuCode: 'AA',
+          },
+          {
+            submenuName: '블렌디드 티',
+            submenuCode: 'BB',
+          },
+          {
+            submenuName: '플레이버리 티',
+            submenuCode: 'CC',
+          },
+        ],
       },
       {
-        category: '블렌드티',
-        items: ['Tea', 'Tea Food', 'Life Style'],
+        category: '보이차',
+        categoryCode: 'PUER',
+        items: [
+          {
+            submenuName: '생차',
+            submenuCode: 'AAA',
+          },
+          {
+            submenuName: '숙차',
+            submenuCode: 'BBB',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Pension',
+    hasSubmenu: true,
+    submenu: [
+      {
+        category: '우티',
+        categoryCode: 'WOTEA',
+        items: [],
+      },
+      {
+        category: '아티',
+        categoryCode: 'ITEA',
+        items: [],
       },
     ],
   },
@@ -30,21 +86,6 @@ const menuItems: MenuType[] = [
   },
   {
     name: 'Gift',
-    hasSubmenu: false,
-    submenu: [],
-  },
-  {
-    name: 'Tea Life',
-    hasSubmenu: true,
-    submenu: [
-      {
-        category: 'Tea',
-        items: ['Tea Story', 'Tea Recipe', 'Tea Guide'],
-      },
-    ],
-  },
-  {
-    name: '단체 및 기업 구매',
     hasSubmenu: false,
     submenu: [],
   },
@@ -64,10 +105,7 @@ type RootLayoutProps = Readonly<{
 const Layout = ({ children }: RootLayoutProps) => {
   return (
     <>
-      <Header
-        menuItems={menuItems}
-        bottomMenuItems={bottomMenuItems}
-      />
+      <Header menuItems={menuItems} bottomMenuItems={bottomMenuItems} />
       {children}
     </>
   );

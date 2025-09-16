@@ -1,46 +1,38 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Dancing_Script } from 'next/font/google';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { isNil } from 'lodash-es';
 import { Menu, Search, ShoppingCart } from 'lucide-react';
+import { useShallow } from 'zustand/shallow';
 
 import AsideMenuComponent from '@/components/layout/AsideMenuComponent';
-import type {
-  BottomMenuType,
-  MenuType,
-} from '@/types/type';
+import useProductMenuCodeStore from '@/stores/useProductMenuCodeStore';
+import type { BottomMenuType, MenuType } from '@/types/type';
 
-const dancingScript = Dancing_Script({
-  subsets: ['latin'],
-  display: 'swap',
-  // weight은 자동으로 variable font로 로드됨 (400-700)
-});
 type HeaderProps = {
   menuItems: MenuType[];
   bottomMenuItems: BottomMenuType[];
 };
 
-const Header = ({
-  menuItems,
-  bottomMenuItems,
-}: HeaderProps) => {
+const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] =
-    useState<boolean>(false);
-  const [openSubMenuIndex, setOpenSubMenuIndex] = useState<
-    number | null
-  >(null);
-  const [hoveredMenu, setHoveredMenu] = useState<
-    number | null
-  >(null);
+
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
+  const [hoveredMenu, setHoveredMenu] = useState<number | null>(null);
+
+  const { setProductMenu } = useProductMenuCodeStore(
+    useShallow((state) => ({
+      setProductMenu: state.setProductMenu,
+    }))
+  );
 
   const toggleSubmenu = (index: number) => {
     if (
-      (!isNil(openSubMenuIndex) &&
-        openSubMenuIndex !== index) ||
+      (!isNil(openSubMenuIndex) && openSubMenuIndex !== index) ||
       isNil(openSubMenuIndex)
     ) {
       setOpenSubMenuIndex(index);
@@ -58,8 +50,18 @@ const Header = ({
     router.push('/login');
   };
 
-  const moveToMainPage = () => {
-    router.push('/');
+  const onLinkHandler = (url: string) => {
+    if (url === '/product') {
+      setProductMenu({
+        parentMenuCode: 'ALL',
+        parentMenuName: '전체 상품 보기',
+        childMenuCode: '',
+        childMenuName: '',
+      });
+    }
+
+    setHoveredMenu(null);
+    router.push(url);
   };
 
   return (
@@ -72,40 +74,42 @@ const Header = ({
         }}
       >
         <div className="mx-auto px-6">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-25">
             <div className="flex flex-1 min-w-0">
-              <div className="flex items-center flex-shrink-0">
-                <h1
-                  className={`text-[52px] font-bold tracking-wider cursor-pointer text-gray-800 pb-[20px] transition-colors duration-300 ${dancingScript.className}`}
-                  onClick={moveToMainPage}
-                >
-                  gwana
-                </h1>
+              <div className="flex items-center flex-shrink-0 cursor-pointer">
+                <Image
+                  src="/images/gwana_logo.png"
+                  alt="gwana_logo"
+                  width={180}
+                  height={100}
+                  onClick={() => onLinkHandler('/')}
+                />
               </div>
 
               <div
                 className="flex items-center ml-8 lg:ml-12 xl:ml-16 2xl:ml-20"
                 style={{ gap: 'clamp(1rem, 6vw, 16rem)' }}
               >
-                {menuItems.map(
-                  ({ name, hasSubmenu }, index) => (
-                    <div
-                      key={index}
-                      className="relative group"
-                      onMouseEnter={() => {
-                        if (!hasSubmenu) {
-                          setHoveredMenu(null);
-                        } else {
-                          setHoveredMenu(index);
-                        }
-                      }}
+                {menuItems.map(({ name, hasSubmenu, url = '' }, index) => (
+                  <div
+                    key={index}
+                    className="relative group"
+                    onMouseEnter={() => {
+                      if (!hasSubmenu) {
+                        setHoveredMenu(null);
+                      } else {
+                        setHoveredMenu(index);
+                      }
+                    }}
+                  >
+                    <button
+                      className="cursor-pointer flex items-center text-[17px] space-x-1 py-6 text-sm font-bold text-gray-800 hover:text-green-600 transition-colors duration-500"
+                      onClick={() => onLinkHandler(url)}
                     >
-                      <button className="flex items-center text-[17px] space-x-1 py-6 text-sm font-semibold text-gray-800  hover:text-green-600 transition-colors duration-500">
-                        <span>{name}</span>
-                      </button>
-                    </div>
-                  )
-                )}
+                      <span>{name}</span>
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="flex items-center flex-shrink-0 space-x-1 lg:space-x-2">
@@ -119,9 +123,7 @@ const Header = ({
                 className="text-gray-800 cursor-pointer hover:bg-gray-100 p-2 lg:p-3 transition-colors duration-500 rounded-2xl whitespace-nowrap"
                 onClick={moveToLoginPage}
               >
-                <span className="font-bold text-sm lg:text-base">
-                  로그인
-                </span>
+                <span className="font-bold text-sm lg:text-base">로그인</span>
               </button>
             </div>
           </div>
@@ -144,14 +146,11 @@ const Header = ({
                         {category}
                       </h3>
                       <ul className="space-y-4 text-[15px]">
-                        {items.map((item, itemIdx) => (
+                        {items.map(({ submenuName }, itemIdx) => (
                           <li key={itemIdx}>
-                            <a
-                              href="#"
-                              className="text-sm text-gray-600 hover:text-green-600 transition-colors"
-                            >
-                              {item}
-                            </a>
+                            <span className="text-sm cursor-pointer text-gray-600 hover:text-green-600 transition-colors">
+                              {submenuName}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -176,12 +175,13 @@ const Header = ({
 
           {/* 로고 */}
           <div className="absolute left-1/2 transform -translate-x-1/2">
-            <h1
-              className={`text-[42px] cursor-pointer pb-[20px] font-bold text-gray-900 font-kalam tracking-[5px] ${dancingScript.className}`}
-              onClick={moveToMainPage}
-            >
-              gwana
-            </h1>
+            <Image
+              src="/images/gwana_logo.png"
+              alt="gwana_logo"
+              width={100}
+              height={100}
+              onClick={() => onLinkHandler('/')}
+            />
           </div>
 
           {/* 우측 아이콘들 */}
@@ -190,10 +190,7 @@ const Header = ({
               <Search size={22} className="text-gray-700" />
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-md transition-colors">
-              <ShoppingCart
-                size={22}
-                className="text-gray-700"
-              />
+              <ShoppingCart size={22} className="text-gray-700" />
             </button>
           </div>
         </div>

@@ -17,12 +17,14 @@ import type {
 } from '@/types/type';
 
 const ControllerInput = <T extends FieldValues>({
+  required = false,
   name,
   className = '',
   placeholder = '',
   type = '',
   callbackFn = null,
 }: {
+  required?: boolean;
   name: FieldPath<T>;
   className?: string;
   placeholder?: string;
@@ -61,7 +63,7 @@ const ControllerInput = <T extends FieldValues>({
 
     setValue(name, value, {
       shouldDirty: false,
-      shouldValidate: false,
+      shouldValidate: required, // required가 false면 검증하지 않음
     });
   };
 

@@ -4,6 +4,7 @@ import '@/app/globals.css';
 
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
+import GlobalAlert from '@/components/common/GlobalAlert';
 import ReactQueryProvider from '@/providers/ReactQueryProvider';
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <ReactQueryProvider>
           {children}
           <ReactQueryDevtools initialIsOpen={false} />
+          <GlobalAlert />
         </ReactQueryProvider>
       </body>
     </html>
