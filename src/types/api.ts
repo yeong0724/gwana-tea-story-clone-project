@@ -6,18 +6,19 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+export interface ErrorResponse {
+  success: boolean;
+  code: string;
+  message: string;
+  data: null;
+}
+
 // 사용자 정보 타입
 export interface User {
   id: string;
   email: string;
   name: string;
   profileImage?: string;
-}
-
-// 로그인 요청 타입
-export interface LoginRequest {
-  email: string;
-  password: string;
 }
 
 // 로그인 응답 타입
@@ -38,4 +39,13 @@ export interface SocialLoginRequest {
 export interface UpdateProfileRequest {
   name?: string;
   profileImage?: string;
+}
+
+// HTTP 메소드 타입 정의
+export enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
 }

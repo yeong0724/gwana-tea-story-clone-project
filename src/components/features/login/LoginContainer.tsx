@@ -5,39 +5,64 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { Check, ChevronDown, X } from 'lucide-react';
 import { Form, FormProvider, FormSubmitHandler, useForm } from 'react-hook-form';
 
+import { fetchLogin } from '@/api/login';
 import ControllerInput from '@/components/common/ControllerInput';
-import { useLogin } from '@/hooks/useLogin';
 import { apiClient } from '@/lib/api';
-import { userAccountSchema, type FormFieldsEnum, type UserAccountInfo } from '@/types/form-type';
+import { useAlertStore } from '@/stores';
+import {
+  FormFieldsEnum,
+  LoginRequest,
+  UserAccountInfo,
+  userAccountSchema,
+  UserResponse,
+} from '@/types';
+import { ApiResponse, HttpMethod } from '@/types/api';
 
 const LoginContainer = () => {
   const router = useRouter();
-  const loginMutation = useLogin();
+  const { showAlert } = useAlertStore();
 
   const [saveId, setSaveId] = useState(false);
 
   // UserAccountInfo 타입에서 자동으로 생성되는 enum (하드코딩 없음)
   const FormFields: FormFieldsEnum<UserAccountInfo> = {
-    USERNAME: 'username',
+    EMAIL: 'email',
     PASSWORD: 'password',
   };
 
   const form = useForm<UserAccountInfo>({
     resolver: zodResolver(userAccountSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
     mode: 'onSubmit',
   });
 
-  const onLoginHandler: FormSubmitHandler<UserAccountInfo> = ({ data }) => {
-    console.log(data);
-    // React Query의 mutate 함수 호출 - 에러 처리는 useLogin 훅에서 자동으로 처리됨
-    loginMutation.mutate(data);
+  const { mutateAsync: loginMutateAsync, isPending: isLoginPending } = useMutation<
+    ApiResponse<string>,
+    unknown,
+    LoginRequest
+  >({
+    mutationFn: fetchLogin,
+  });
+
+  const onLoginHandler: FormSubmitHandler<UserAccountInfo> = async ({ data }) => {
+    const { success, data: accessToken, message } = await loginMutateAsync(data);
+    if (success) {
+      localStorage.setItem('accessToken', accessToken);
+      router.push('/');
+    } else {
+      showAlert({
+        title: '로그인 실패',
+        description: message,
+        size: 'sm',
+      });
+    }
   };
 
   const moveToBackpage = () => {
@@ -50,14 +75,17 @@ const LoginContainer = () => {
       password: '!qn4090ys!',
     };
 
-    const response = await apiClient({
-      method: 'POST',
+    const response = await apiClient<UserResponse>({
+      method: HttpMethod.POST,
       url: '/auth/signup',
       params,
     });
 
     console.log('onSignupHandler : ', response);
-    return response.data;
+  };
+
+  const onKakaoLogin = async () => {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
   };
 
   return (
@@ -84,7 +112,7 @@ const LoginContainer = () => {
             <div className="space-y-4 mb-6">
               <div>
                 <ControllerInput
-                  name={FormFields.USERNAME}
+                  name={FormFields.EMAIL}
                   placeholder="Email을 입력하세요."
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
@@ -119,14 +147,14 @@ const LoginContainer = () => {
             {/* 로그인 버튼 */}
             <button
               className={`w-full py-4 rounded-lg font-medium text-lg transition-colors cursor-pointer ${
-                loginMutation.isPending
+                isLoginPending
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-green-500 hover:bg-green-600'
               } text-white`}
               type="submit"
-              disabled={loginMutation.isPending}
+              disabled={isLoginPending}
             >
-              {loginMutation.isPending ? '로그인 중...' : '로그인'}
+              {isLoginPending ? '로그인 중...' : '로그인'}
             </button>
             <button
               className="w-full py-4 rounded-lg font-medium text-lg transition-colors bg-green-500 hover:bg-green-600 cursor-pointer text-white mt-5"
@@ -141,7 +169,10 @@ const LoginContainer = () => {
         {/* 소셜 로그인 */}
         <div className="mt-12 flex justify-center">
           <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col items-center cursor-pointer  hover:bg-gray-100 p-4 rounded-3xl">
+            <div
+              className="flex flex-col items-center cursor-pointer  hover:bg-gray-100 p-4 rounded-3xl"
+              onClick={onKakaoLogin}
+            >
               <Image src="/images/kakao_logo.webp" width={60} height={60} alt="카카오" />
               <span className="text-sm text-gray-600 my-2 font-bold">카카오</span>
             </div>

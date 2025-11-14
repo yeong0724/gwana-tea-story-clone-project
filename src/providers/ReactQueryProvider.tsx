@@ -1,24 +1,19 @@
 'use client';
 
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
-import { get } from 'lodash-es';
-import { useShallow } from 'zustand/shallow';
+import { useRouter } from 'next/navigation';
+
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError, AxiosResponse } from 'axios';
 
 import { useAlertStore } from '@/stores';
+import { ErrorResponse } from '@/types/api';
 
 type Props = {
   children: Readonly<React.ReactNode>;
 };
 const ReactQueryProvider = ({ children }: Props) => {
-  const { showAlert } = useAlertStore(
-    useShallow((state) => ({
-      showAlert: state.showAlert,
-    }))
-  );
+  const router = useRouter();
+  const { showConfirmAlert } = useAlertStore();
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -27,25 +22,23 @@ const ReactQueryProvider = ({ children }: Props) => {
       },
     },
     queryCache: new QueryCache({
-      onError: (error: Error) => {
-        const message = get(
-          error,
-          'response.data.error',
-          error?.message ?? '알 수 없는 오류가 발생했습니다.'
-        );
+      onError: async (error) => {
+        const axiosError = error as AxiosError;
+        const { data, status } = axiosError.response as AxiosResponse<ErrorResponse>;
 
-        showAlert({
-          title: '에러',
-          description: message,
-          size: 'sm',
-        });
+        if (status === 401) {
+          await showConfirmAlert({
+            title: '에러',
+            description: data?.message ?? '에러가 발생했습니다.',
+            size: 'sm',
+          });
+          router.push('/');
+        }
       },
     }),
   });
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };
 
 export default ReactQueryProvider;

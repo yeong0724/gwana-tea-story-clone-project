@@ -1,7 +1,18 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
+import { tokenManager } from '@/lib/utils';
+import { HttpMethod } from '@/types/api';
+
 // API 인스턴스 생성
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${process.env.NEXT_PUBLIC_API_VERSION}`;
+
+const noInterceptorAxios: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -13,13 +24,10 @@ const axiosInstance: AxiosInstance = axios.create({
 
 // 요청 인터셉터 - Bearer 토큰 자동 설정
 axiosInstance.interceptors.request.use(
-  (config) => {
-    // 클라이언트 사이드에서만 localStorage 접근
-    if (typeof window !== 'undefined') {
-      const accessToken = tokenManager.getAccessToken();
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
+  async (config) => {
+    const accessToken = tokenManager.getAccessToken();
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -30,28 +38,32 @@ axiosInstance.interceptors.request.use(
 
 // 응답 인터셉터 - 에러 처리
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse) => {
+  async (response: AxiosResponse) => {
+    const { data } = response;
+    if (data.code === '4005' && !data.success) {
+      const accessToken = tokenManager.getAccessToken();
+      try {
+        const result = await noInterceptorAxios.post('/user/refresh/token', { accessToken });
+
+        if (result.data.success) {
+          // tokenManager.setAccessToken(result.data.accessToken);
+          // return axiosInstance(response.config);
+        }
+      } catch (error) {
+        throw error;
+      }
+    }
+
     /**
      * HttpStatus.OK (200)
      * HttpStatus.CREATED (201)
      */
-    return response;
+    return response.data;
   },
-  (error) => {
-    // 401 에러 시 토큰 제거 및 로그인 페이지로 리다이렉트
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-      }
-    }
-
+  async (error) => {
     throw error;
   }
 );
-
-// HTTP 메소드 타입 정의
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 // API 요청 옵션 타입
 interface ApiRequestOptions {
@@ -62,12 +74,12 @@ interface ApiRequestOptions {
 }
 
 // 통합 API 통신 함수
-export const apiClient = <T = unknown>({
+export const apiClient = <T>({
   method,
   url,
   params: data,
   headers = {},
-}: ApiRequestOptions): Promise<AxiosResponse<T>> => {
+}: ApiRequestOptions): Promise<T> => {
   const instance: AxiosRequestConfig = {
     method,
     url,
@@ -76,12 +88,12 @@ export const apiClient = <T = unknown>({
 
   try {
     switch (method) {
-      case 'GET':
-      case 'DELETE':
+      case HttpMethod.GET:
+      case HttpMethod.DELETE:
         return axiosInstance(instance);
-      case 'POST':
-      case 'PUT':
-      case 'PATCH':
+      case HttpMethod.POST:
+      case HttpMethod.PUT:
+      case HttpMethod.PATCH:
         return axiosInstance({
           ...instance,
           data,
@@ -92,40 +104,24 @@ export const apiClient = <T = unknown>({
   }
 };
 
-// 토큰 관리 함수들
-export const tokenManager = {
-  // 토큰 저장
-  setTokens: (accessToken: string, refreshToken?: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken);
-      }
-    }
-  },
+type AxiosOptions = {
+  url: string;
+  params: unknown;
+};
 
-  // 토큰 가져오기
-  getAccessToken: (): string | null => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('accessToken');
-    }
-    return null;
-  },
+export const postAxios = <T>({ url, params }: AxiosOptions): Promise<T> => {
+  return apiClient<T>({
+    method: HttpMethod.POST,
+    url,
+    params,
+  });
+};
 
-  getRefreshToken: (): string | null => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('refreshToken');
-    }
-    return null;
-  },
-
-  // 토큰 제거
-  clearTokens: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
-  },
+export const getAxios = <T>({ url }: Omit<AxiosOptions, 'params'>): Promise<T> => {
+  return apiClient<T>({
+    method: HttpMethod.GET,
+    url,
+  });
 };
 
 export default axiosInstance;

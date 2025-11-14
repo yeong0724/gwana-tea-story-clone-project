@@ -1,4 +1,5 @@
 import Header from '@/components/layout/Header';
+import { MenuGroup } from '@/types';
 import type { BottomMenuType, MenuType } from '@/types/type';
 
 export const menuItems: MenuType[] = [
@@ -91,6 +92,48 @@ export const menuItems: MenuType[] = [
   },
 ];
 
+export const menuGroup: MenuGroup = {
+  main: [
+    {
+      menuName: '티 제품',
+      menuId: 'product',
+      upperMenuId: null,
+    },
+    {
+      menuName: 'Pension',
+      menuId: 'pension',
+      upperMenuId: null,
+    },
+  ],
+  category: [
+    {
+      menuName: '녹차',
+      menuId: 'greenTea',
+      upperMenuId: 'product',
+    },
+    {
+      menuName: '홍차',
+      menuId: 'blackTea',
+      upperMenuId: 'product',
+    },
+    {
+      menuName: '대용차',
+      menuId: 'substituteTea',
+      upperMenuId: 'product',
+    },
+    {
+      menuName: '우티',
+      menuId: 'wuti',
+      upperMenuId: 'pension',
+    },
+    {
+      menuName: '아티',
+      menuId: 'ati',
+      upperMenuId: 'pension',
+    },
+  ],
+};
+
 const bottomMenuItems: BottomMenuType[] = [
   { name: '매장찾기' },
   { name: '공지사항' },
@@ -105,7 +148,7 @@ type RootLayoutProps = Readonly<{
 const Layout = ({ children }: RootLayoutProps) => {
   return (
     <>
-      <Header menuItems={menuItems} bottomMenuItems={bottomMenuItems} />
+      <Header menuGroup={menuGroup} bottomMenuItems={bottomMenuItems} />
       {children}
     </>
   );

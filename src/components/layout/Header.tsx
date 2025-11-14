@@ -1,46 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { isNil } from 'lodash-es';
-import { Menu, Search, ShoppingCart } from 'lucide-react';
-import { useShallow } from 'zustand/shallow';
+import { filter } from 'lodash-es';
+import { Menu as MenuIcon, Search, ShoppingCart } from 'lucide-react';
 
 import AsideMenuComponent from '@/components/layout/AsideMenuComponent';
-import useProductMenuCodeStore from '@/stores/useProductMenuCodeStore';
-import type { BottomMenuType, MenuType } from '@/types/type';
+import { useMenuStore } from '@/stores';
+import type { BottomMenuType, Menu, MenuGroup } from '@/types';
 
 type HeaderProps = {
-  menuItems: MenuType[];
+  menuGroup: MenuGroup;
   bottomMenuItems: BottomMenuType[];
 };
 
-const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
+const Header = ({ menuGroup, bottomMenuItems }: HeaderProps) => {
+  const { main, category } = menuGroup;
+
   const router = useRouter();
+  const { setMenu } = useMenuStore();
 
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null);
-  const [hoveredMenu, setHoveredMenu] = useState<number | null>(null);
-
-  const { setProductMenu } = useProductMenuCodeStore(
-    useShallow((state) => ({
-      setProductMenu: state.setProductMenu,
-    }))
-  );
-
-  const toggleSubmenu = (index: number) => {
-    if (
-      (!isNil(openSubMenuIndex) && openSubMenuIndex !== index) ||
-      isNil(openSubMenuIndex)
-    ) {
-      setOpenSubMenuIndex(index);
-      return;
-    }
-
-    setOpenSubMenuIndex(null);
-  };
+  const [isHeaderHovered, setIsHeaderHovered] = useState<boolean>(false);
+  const [isMainHovered, setIsMainHovered] = useState<boolean>(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -50,30 +34,49 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
     router.push('/login');
   };
 
-  const onLinkHandler = (url: string) => {
-    if (url === '/product') {
-      setProductMenu({
-        parentMenuCode: 'ALL',
-        parentMenuName: '전체 상품 보기',
-        childMenuCode: '',
-        childMenuName: '',
-      });
+  const onClickMain = (menuId: string) => {
+    if (menuId === 'product') {
+      setIsHeaderHovered(false);
+      router.push('/product?category=all');
     }
-
-    setHoveredMenu(null);
-    router.push(url);
   };
+
+  const onClickCategory = (mainMenuId: string, categoryMenuId: string) => {
+    setIsHeaderHovered(false);
+    setIsMainHovered(false);
+
+    if (mainMenuId === 'product') {
+      router.push(`/${mainMenuId}?category=${categoryMenuId}`);
+    }
+  };
+
+  /**
+   * Menu 정보 Store 저장
+   */
+  useEffect(() => setMenu(menuGroup), [menuGroup]);
 
   return (
     <>
       {/* Main Bar Header */}
       <header
         className={`hidden lg:block sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/5 backdrop-blur-sm hover:bg-white hover:shadow-lg`}
+        onMouseEnter={() => setIsHeaderHovered(true)}
         onMouseLeave={() => {
-          setHoveredMenu(null);
+          setIsHeaderHovered(false);
+          setIsMainHovered(false);
         }}
       >
-        <div className="mx-auto px-6">
+        {/* 카테고리 배경 영역 - 카테고리가 있는 메뉴에 마우스를 올렸을 때만 표시 */}
+        <div
+          className={`absolute left-0 right-0 top-full bg-white border-t border-gray-100 shadow-xl transition-all duration-500 ease-in-out origin-top z-10 ${
+            isHeaderHovered && isMainHovered
+              ? 'scale-y-100 opacity-100 visible'
+              : 'scale-y-0 opacity-0 invisible'
+          }`}
+          style={{ height: '180px' }}
+        />
+
+        <div className="mx-auto px-6 relative z-20">
           <div className="flex items-center justify-between h-25">
             <div className="flex flex-1 min-w-0">
               <div className="flex items-center flex-shrink-0 cursor-pointer">
@@ -82,34 +85,57 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
                   alt="gwana_logo"
                   width={180}
                   height={100}
-                  onClick={() => onLinkHandler('/')}
+                  onClick={() => router.push('/')}
                 />
               </div>
 
               <div
-                className="flex items-center ml-8 lg:ml-12 xl:ml-16 2xl:ml-20"
-                style={{ gap: 'clamp(1rem, 6vw, 16rem)' }}
+                className="grid"
+                style={{
+                  gridTemplateColumns: `repeat(${menuGroup.main.length}, 1fr)`,
+                  gap: 'clamp(1rem, 6vw, 16rem)',
+                  marginLeft: 'calc(2rem + 100px)',
+                }}
               >
-                {menuItems.map(({ name, hasSubmenu, url = '' }, index) => (
-                  <div
-                    key={index}
-                    className="relative group"
-                    onMouseEnter={() => {
-                      if (!hasSubmenu) {
-                        setHoveredMenu(null);
-                      } else {
-                        setHoveredMenu(index);
-                      }
-                    }}
-                  >
-                    <button
-                      className="cursor-pointer flex items-center text-[17px] space-x-1 py-6 text-sm font-bold text-gray-800 hover:text-green-600 transition-colors duration-500"
-                      onClick={() => onLinkHandler(url)}
+                {main.map(({ menuName, menuId }) => {
+                  const categories = filter(category, { upperMenuId: menuId }) as Menu[];
+
+                  return (
+                    <div
+                      key={menuId}
+                      className="relative group flex flex-col items-center justify-start"
+                      onMouseEnter={() => setIsMainHovered(true)}
                     >
-                      <span>{name}</span>
-                    </button>
-                  </div>
-                ))}
+                      {/* 메인 메뉴 버튼 */}
+                      <button
+                        className="cursor-pointer flex items-center justify-center text-[24px] space-x-1 py-6 text-sm font-bold text-gray-800 hover:text-green-600 transition-colors duration-500 w-full"
+                        onClick={() => onClickMain(menuId)}
+                      >
+                        <span>{menuName}</span>
+                      </button>
+
+                      {/* 카테고리 드롭다운 - 해당 메인 메뉴에 호버시에만 표시 */}
+                      <div
+                        className={`absolute top-full pt-8 flex flex-col items-center space-y-3 z-30 transition-all duration-500 ease-in-out origin-top ${
+                          isHeaderHovered && isMainHovered
+                            ? 'scale-y-100 opacity-100 visible'
+                            : 'scale-y-0 opacity-0 invisible'
+                        }`}
+                        onMouseEnter={() => setIsMainHovered(true)}
+                      >
+                        {categories.map((category) => (
+                          <button
+                            key={category.menuId}
+                            className="cursor-pointer mb-[20px] text-[18px] text-gray-600 hover:text-green-600 transition-colors whitespace-nowrap text-center"
+                            onClick={() => onClickCategory(menuId, category.menuId)}
+                          >
+                            {category.menuName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <div className="flex items-center flex-shrink-0 space-x-1 lg:space-x-2">
@@ -128,38 +154,6 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
             </div>
           </div>
         </div>
-
-        <div
-          className={`absolute left-0 right-0 bg-white border-t border-gray-100 shadow-xl transition-all duration-500 ease-in-out overflow-hidden origin-top ${
-            hoveredMenu !== null
-              ? 'scale-y-100 opacity-100 visible'
-              : 'scale-y-0 opacity-0 invisible'
-          }`}
-        >
-          <div className="mx-auto pl-80 px-6 py-8">
-            <div className="grid grid-cols-3 gap-12 w-[800px]">
-              {hoveredMenu !== null &&
-                menuItems[hoveredMenu].submenu.map(
-                  ({ category, items }, idx) => (
-                    <div key={idx}>
-                      <h3 className="font-semibold text-[18px] text-gray-900 mb-4">
-                        {category}
-                      </h3>
-                      <ul className="space-y-4 text-[15px]">
-                        {items.map(({ submenuName }, itemIdx) => (
-                          <li key={itemIdx}>
-                            <span className="text-sm cursor-pointer text-gray-600 hover:text-green-600 transition-colors">
-                              {submenuName}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )
-                )}
-            </div>
-          </div>
-        </div>
       </header>
       {/* Side - Header */}
       <header className="sticky lg:hidden top-0 bg-white border-b border-gray-200 z-40">
@@ -170,7 +164,7 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
             className="p-2 hover:bg-gray-100 rounded-md transition-colors z-50 relative"
             aria-label="메뉴 열기"
           >
-            <Menu size={24} className="text-gray-700" />
+            <MenuIcon size={24} className="text-gray-700" />
           </button>
 
           {/* 로고 */}
@@ -180,7 +174,7 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
               alt="gwana_logo"
               width={100}
               height={100}
-              onClick={() => onLinkHandler('/')}
+              onClick={() => router.push('/')}
             />
           </div>
 
@@ -195,14 +189,13 @@ const Header = ({ menuItems, bottomMenuItems }: HeaderProps) => {
           </div>
         </div>
       </header>
+      {/* TODO: 사이드바는 추후 리팩토링 */}
       <AsideMenuComponent
         isMenuOpen={isMenuOpen}
         moveToLoginPage={moveToLoginPage}
         toggleMenu={toggleMenu}
-        toggleSubmenu={toggleSubmenu}
-        menuItems={menuItems}
+        menuGroup={menuGroup}
         bottomMenuItems={bottomMenuItems}
-        openSubMenuIndex={openSubMenuIndex}
       />
     </>
   );

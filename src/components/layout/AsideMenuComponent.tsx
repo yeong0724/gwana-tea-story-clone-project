@@ -1,26 +1,51 @@
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+import { concat, filter, isEmpty } from 'lodash-es';
 import { ChevronDown, X } from 'lucide-react';
 
-import type { BottomMenuType, MenuType } from '@/types/type';
+import { BottomMenuType, MenuGroup } from '@/types';
 
 type Props = {
   isMenuOpen: boolean;
   moveToLoginPage: () => void;
   toggleMenu: () => void;
-  toggleSubmenu: (index: number) => void;
-  menuItems: MenuType[];
   bottomMenuItems: BottomMenuType[];
-  openSubMenuIndex: number | null;
+  menuGroup: MenuGroup;
 };
 
 const AsideMenuComponent = ({
   isMenuOpen,
   moveToLoginPage,
   toggleMenu,
-  toggleSubmenu,
-  menuItems,
   bottomMenuItems,
-  openSubMenuIndex,
+  menuGroup,
 }: Props) => {
+  const { main, category } = menuGroup;
+  const router = useRouter();
+  const [currentMenu, setCurrentMenu] = useState<string>('');
+
+  const getFilteredCategory = (menuId: string) => {
+    const init =
+      menuId === 'product'
+        ? [{ menuName: '전체 상품 보기', menuId: 'all', upperMenuId: null }]
+        : [];
+    return concat(init, filter(category, { upperMenuId: menuId }));
+  };
+
+  const onClickMain = (menuId: string, hasCategory: boolean) => {
+    if (hasCategory) {
+      setCurrentMenu(menuId);
+    }
+  };
+
+  const onClickCategory = (categoryId: string) => {
+    if (currentMenu === 'product') {
+      router.push(`/${currentMenu}?category=${categoryId}`);
+      toggleMenu();
+    }
+  };
+
   return (
     <>
       {/* 오버레이 */}
@@ -48,7 +73,7 @@ const AsideMenuComponent = ({
 
           <button
             onClick={toggleMenu}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
             aria-label="메뉴 닫기"
           >
             <X size={24} className="text-gray-700" />
@@ -59,45 +84,47 @@ const AsideMenuComponent = ({
         <div className="flex-1 overflow-y-auto sidebar-scroll min-h-0">
           <div className="flex flex-col min-h-full">
             <div className="py-2 flex-shrink-0">
-              {menuItems.map(({ hasSubmenu, name, submenu, url }, index) => (
-                <div key={index} className="border-b border-gray-100 last:border-b-0">
-                  <button
-                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
-                    onClick={() => (hasSubmenu ? toggleSubmenu(index) : null)}
-                  >
-                    <span className="text-base font-medium text-gray-900">{name}</span>
-                    {hasSubmenu && (
-                      <ChevronDown
-                        size={20}
-                        className={`text-gray-400 transition-transform duration-600 ${
-                          openSubMenuIndex === index ? 'rotate-180' : ''
-                        }`}
-                      />
-                    )}
-                  </button>
+              {main.map(({ menuId, menuName }) => {
+                const filteredCategory = getFilteredCategory(menuId);
+                const hasCategory = !isEmpty(filteredCategory);
 
-                  {/* 서브메뉴 */}
-                  {hasSubmenu && (
-                    <div
-                      className={`bg-gray-50 overflow-hidden transition-all duration-600 ease-in-out ${
-                        openSubMenuIndex === index ? 'max-h-48' : 'max-h-0'
-                      }`}
+                return (
+                  <div key={menuId} className="border-b border-gray-100 last:border-b-0">
+                    <button
+                      className={`w-full flex items-center justify-between px-6 py-4 text-left hover:bg-amber-50/30 transition-colors ${currentMenu === menuId ? 'bg-amber-50/30 transition-colors' : ''}`}
+                      onClick={() => onClickMain(menuId, hasCategory)}
                     >
-                      {submenu.map(({ category, items }, subIndex) => (
-                        <button
-                          key={subIndex}
-                          className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                          onClick={() => {
-                            toggleSubmenu(subIndex);
-                          }}
-                        >
-                          {category}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                      <span className="text-base font-medium text-gray-900">{menuName}</span>
+                      {hasCategory && (
+                        <ChevronDown
+                          size={20}
+                          className={`text-gray-400 transition-transform duration-600 ${
+                            currentMenu === menuId ? 'rotate-180' : ''
+                          }`}
+                        />
+                      )}
+                    </button>
+                    {/* 서브메뉴 */}
+                    {hasCategory && (
+                      <div
+                        className={`bg-amber-50/30 overflow-hidden transition-all duration-600 ease-in-out ${
+                          currentMenu === menuId ? 'max-h-48' : 'max-h-0'
+                        }`}
+                      >
+                        {filteredCategory.map((category, subIndex) => (
+                          <button
+                            key={subIndex}
+                            className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                            onClick={() => onClickCategory(category.menuId)}
+                          >
+                            {category.menuName}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* 하단 메뉴 - 플렉스로 바닥에 배치 */}

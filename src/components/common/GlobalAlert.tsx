@@ -13,31 +13,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useAlertStore } from '@/stores';
+import { alertStore } from '@/stores/useAlertStore';
 
 const GlobalAlert = () => {
   const {
     isOpen,
     title,
     description,
-    onConfirm,
-    onCancel,
     confirmText,
     cancelText,
     variant,
     size,
+    confirmAlert,
+    cancelAlert,
     hideAlert,
-  } = useAlertStore();
-
-  const handleConfirm = () => {
-    onConfirm?.();
-    hideAlert();
-  };
-
-  const handleCancel = () => {
-    onCancel?.();
-    hideAlert();
-  };
+    type,
+  } = alertStore();
 
   const alertSize = useMemo(() => {
     switch (size) {
@@ -54,18 +45,24 @@ const GlobalAlert = () => {
     }
   }, [size]);
 
+  const handleConfirm = () => {
+    if (type === 'CONFIRM') {
+      confirmAlert();
+    } else {
+      hideAlert();
+    }
+  };
+
   return (
-    <AlertDialog open={isOpen} onOpenChange={hideAlert}>
+    <AlertDialog open={isOpen} onOpenChange={() => hideAlert()}>
       <AlertDialogContent className={alertSize}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription className="min-h-[30px]">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          {cancelText && (
-            <AlertDialogCancel onClick={handleCancel}>
-              {cancelText}
-            </AlertDialogCancel>
+          {type === 'CONFIRM' && cancelText && (
+            <AlertDialogCancel onClick={cancelAlert}>{cancelText || '취소'}</AlertDialogCancel>
           )}
           <AlertDialogAction
             onClick={handleConfirm}
