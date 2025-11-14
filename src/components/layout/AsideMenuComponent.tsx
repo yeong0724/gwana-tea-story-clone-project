@@ -42,8 +42,13 @@ const AsideMenuComponent = ({
   const onClickCategory = (categoryId: string) => {
     if (currentMenu === 'product') {
       router.push(`/${currentMenu}?category=${categoryId}`);
-      toggleMenu();
+      closeSidebar();
     }
+  };
+
+  const closeSidebar = () => {
+    toggleMenu();
+    setCurrentMenu('');
   };
 
   return (
@@ -72,7 +77,7 @@ const AsideMenuComponent = ({
           </button>
 
           <button
-            onClick={toggleMenu}
+            onClick={closeSidebar}
             className="p-2 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
             aria-label="메뉴 닫기"
           >
