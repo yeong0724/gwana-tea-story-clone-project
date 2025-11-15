@@ -163,7 +163,7 @@
     @apply bg-background text-foreground;
   }
   button {
-    @apply transition-all active:scale-[0.97];
+    @apply transition-all active:scale-[0.9];
   }
 }
 

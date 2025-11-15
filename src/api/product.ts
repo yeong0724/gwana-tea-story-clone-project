@@ -13,7 +13,7 @@ const getProductList = async <T>(params: T) => {
   // });
 };
 
-const delayAsync = (delay: number = 2000): Promise<number> => {
+const delayAsync = (delay: number = 1000): Promise<number> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(10);
