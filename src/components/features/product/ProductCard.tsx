@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 import { Truck } from 'lucide-react';
 
@@ -23,10 +24,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
-  const images = product.images || [
-    'https://via.placeholder.com/400x500/87CEEB/FFFFFF?text=Product+Image+1',
-    'https://via.placeholder.com/400x500/B0E0E6/FFFFFF?text=Product+Image+2',
-  ];
+  const images = product.images || [];
 
   useEffect(() => {
     if (!api) return;
@@ -48,7 +46,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       {/* 이미지 슬라이더 영역 */}
       <div
         className="relative w-full bg-gray-100 group overflow-hidden"
-        style={{ aspectRatio: '3/2' }}
+        style={{ aspectRatio: '1' }}
       >
         <Carousel
           setApi={setApi}
@@ -62,17 +60,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {images.map((image, index) => (
               <CarouselItem key={index} className="h-full pl-0 basis-full shrink-0 grow-0">
                 <div className="relative w-full h-full">
-                  <img
-                    src={image}
-                    alt={`${product.productName} - Image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('Image load error:', image);
-                      const target = e.target as HTMLImageElement;
-                      target.src =
-                        'https://via.placeholder.com/400x500/CCCCCC/666666?text=Image+Error';
-                    }}
-                  />
+                  <Image src={image} alt={`${image}`} width={600} height={600} />
                 </div>
               </CarouselItem>
             ))}
@@ -113,12 +101,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex items-center justify-between pt-1">
           <div className="space-y-1">
             <p className="text-lg font-bold text-gray-900">{formatPrice(product.price || 25000)}</p>
-            {product.shippingPrice !== undefined && (
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <Truck className="w-3 h-3" />
-                <span>배송비 {formatPrice(product.shippingPrice || 4000)}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Truck className="w-3 h-3" />
+              <span>
+                {product.shippingPrice
+                  ? `배송비 ${formatPrice(product.shippingPrice)}`
+                  : '무료배송'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
