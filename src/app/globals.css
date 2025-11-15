@@ -162,6 +162,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  button {
+    @apply transition-all active:scale-[0.97];
+  }
 }
 
 /* Shimmer 애니메이션 정의 */
