@@ -26,6 +26,7 @@ const Header = ({ menuGroup, bottomMenuItems }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isHeaderHovered, setIsHeaderHovered] = useState<boolean>(false);
   const [isMainHovered, setIsMainHovered] = useState<boolean>(false);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -61,16 +62,33 @@ const Header = ({ menuGroup, bottomMenuItems }: HeaderProps) => {
     });
   };
 
+  const handleScroll = () => {
+    setIsScrolled(window.scrollY > 0);
+  };
+
   /**
    * Menu 정보 Store 저장
    */
   useEffect(() => setMenu(menuGroup), [menuGroup]);
 
+  /**
+   * 스크롤 위치에 따라 헤더 배경색 변경
+   */
+  useEffect(() => {
+    // 초기 스크롤 위치 확인
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <>
       {/* Main Bar Header */}
       <header
-        className={`hidden lg:block sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/5 backdrop-blur-sm hover:bg-white hover:shadow-lg`}
+        className={`hidden lg:block sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? 'bg-white shadow-lg' : 'bg-white/30'
+        } hover:bg-white hover:shadow-lg`}
         onMouseEnter={() => setIsHeaderHovered(true)}
         onMouseLeave={() => {
           setIsHeaderHovered(false);

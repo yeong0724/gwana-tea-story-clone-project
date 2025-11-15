@@ -1,3 +1,4 @@
+import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { MenuGroup } from '@/types';
 import type { BottomMenuType, MenuType } from '@/types/type';
@@ -147,10 +148,11 @@ type RootLayoutProps = Readonly<{
 
 const Layout = ({ children }: RootLayoutProps) => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header menuGroup={menuGroup} bottomMenuItems={bottomMenuItems} />
-      {children}
-    </>
+      <main className="flex-1 min-h-[1200px]">{children}</main>
+      <Footer />
+    </div>
   );
 };
 

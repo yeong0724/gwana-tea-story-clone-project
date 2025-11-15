@@ -19,7 +19,7 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>
+      <body className="min-h-screen flex flex-col">
         <ReactQueryProvider>
           {children}
           <ReactQueryDevtools initialIsOpen={false} />
