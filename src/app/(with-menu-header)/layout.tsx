@@ -150,7 +150,7 @@ const Layout = ({ children }: RootLayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header menuGroup={menuGroup} bottomMenuItems={bottomMenuItems} />
-      <main className="flex-1 min-h-[1200px]">{children}</main>
+      <main className="flex-1 min-h-[1800px]">{children}</main>
       <Footer />
     </div>
   );
