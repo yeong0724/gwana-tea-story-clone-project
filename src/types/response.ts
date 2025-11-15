@@ -21,4 +21,8 @@ export type Product = {
   productId: string;
   productName: string;
   categoryId: string;
+  images?: string[];
+  price?: number;
+  shippingPrice?: number;
+  isLiked?: boolean;
 };

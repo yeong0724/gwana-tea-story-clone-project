@@ -31,7 +31,7 @@ const ProductContainer = ({ categoryId }: Props) => {
   }, [category, pathname]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 max-w-[1800px] mx-auto">
       {/* 사이드 네비게이션 - 데스크톱용 */}
       <nav
         className="w-80 bg-white fixed top-25 overflow-y-auto flex-shrink-0 hidden lg:block"

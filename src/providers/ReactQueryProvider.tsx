@@ -19,6 +19,7 @@ const ReactQueryProvider = ({ children }: Props) => {
     defaultOptions: {
       queries: {
         retry: false,
+        refetchOnWindowFocus: false,
       },
     },
     queryCache: new QueryCache({

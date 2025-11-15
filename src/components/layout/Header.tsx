@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { filter } from 'lodash-es';
 import { Menu as MenuIcon, Search, ShoppingCart } from 'lucide-react';
 
@@ -18,7 +19,7 @@ type HeaderProps = {
 
 const Header = ({ menuGroup, bottomMenuItems }: HeaderProps) => {
   const { main, category } = menuGroup;
-
+  const queryClient = useQueryClient();
   const router = useRouter();
   const { setMenu } = useMenuStore();
 
@@ -35,9 +36,10 @@ const Header = ({ menuGroup, bottomMenuItems }: HeaderProps) => {
   };
 
   const onClickMain = (menuId: string) => {
+    setIsHeaderHovered(false);
+
     if (menuId === 'product') {
-      setIsHeaderHovered(false);
-      router.push('/product?category=all');
+      moveToProductPage('all');
     }
   };
 
@@ -46,8 +48,17 @@ const Header = ({ menuGroup, bottomMenuItems }: HeaderProps) => {
     setIsMainHovered(false);
 
     if (mainMenuId === 'product') {
-      router.push(`/${mainMenuId}?category=${categoryMenuId}`);
+      moveToProductPage(categoryMenuId);
     }
+  };
+
+  const moveToProductPage = (categoryMenuId: string) => {
+    router.push(`/product?category=${categoryMenuId}`);
+    // productList로 시작하는 모든 쿼리 무효화 (특정 categoryId 포함)
+    queryClient.invalidateQueries({
+      queryKey: ['productList'],
+      refetchType: 'active', // 활성화된 쿼리만 즉시 재호출
+    });
   };
 
   /**

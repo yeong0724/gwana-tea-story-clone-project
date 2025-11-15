@@ -35,7 +35,7 @@ const AsideMenuComponent = ({
 
   const onClickMain = (menuId: string, hasCategory: boolean) => {
     if (hasCategory) {
-      setCurrentMenu(menuId);
+      setCurrentMenu((prev) => (prev === menuId ? '' : menuId));
     }
   };
 
@@ -96,7 +96,7 @@ const AsideMenuComponent = ({
                 return (
                   <div key={menuId} className="border-b border-gray-100 last:border-b-0">
                     <button
-                      className={`w-full flex items-center justify-between px-6 py-4 text-left hover:bg-amber-50/30 transition-colors ${currentMenu === menuId ? 'bg-amber-50/30 transition-colors' : ''}`}
+                      className={`w-full flex items-center justify-between px-6 py-4 text-left cursor-pointer transition-colors ${currentMenu === menuId ? 'transition-colors' : ''}`}
                       onClick={() => onClickMain(menuId, hasCategory)}
                     >
                       <span className="text-base font-medium text-gray-900">{menuName}</span>
@@ -119,7 +119,7 @@ const AsideMenuComponent = ({
                         {filteredCategory.map((category, subIndex) => (
                           <button
                             key={subIndex}
-                            className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                            className="w-full text-left px-8 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer bg-gray-100 "
                             onClick={() => onClickCategory(category.menuId)}
                           >
                             {category.menuName}
