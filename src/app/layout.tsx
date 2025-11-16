@@ -19,7 +19,7 @@ type RootLayoutProps = Readonly<{
 }>;
 
 const pretendard = localFont({
-  src: '../static/fonts/Pretendard-Regular.woff2',
+  src: '../static/fonts/PretendardVariable.woff2',
   display: 'swap',
   weight: '45 920',
   variable: '--font-pretendard',

@@ -166,13 +166,13 @@ const ProductDetailContainer = ({ productId }: Props) => {
           {/* 우측: 상품 정보 */}
           <div className="flex-1 lg:flex-[0_0_50%] flex flex-col">
             {/* 브레드크럼과 공유 아이콘 */}
-            <div className="flex items-center justify-between text-[18px] text-gray-600 mb-[24px]">
+            <div className="flex items-center justify-between text-[18px] font-medium text-gray-400 mb-[24px]">
               <div>
                 <span>티 제품</span>
                 {categoryName && (
                   <>
                     <span className="mx-2">{'>'}</span>
-                    <span className="font-medium">{categoryName}</span>
+                    <span>{categoryName}</span>
                   </>
                 )}
               </div>
@@ -189,9 +189,7 @@ const ProductDetailContainer = ({ productId }: Props) => {
             <h1 className="text-xl lg:text-[20px] font-bold mb-[30px]">{product.productName}</h1>
 
             {/* 가격 */}
-            <div className="text-[24px] font-bold mb-6">
-              {product.price?.toLocaleString('ko-KR')}원
-            </div>
+            <div className="text-[30px] mb-6">{product.price?.toLocaleString('ko-KR')}원</div>
 
             {/* 배송비 정보 */}
             <div className="mb-6 pb-6">
