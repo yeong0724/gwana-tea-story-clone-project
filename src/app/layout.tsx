@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 
 import '@/app/globals.css';
 
+import localFont from 'next/font/local';
+
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import GlobalAlert from '@/components/common/GlobalAlert';
@@ -16,9 +18,16 @@ type RootLayoutProps = Readonly<{
   children: React.ReactNode;
 }>;
 
+const pretendard = localFont({
+  src: '../static/fonts/Pretendard-Regular.woff2',
+  display: 'swap',
+  weight: '45 920',
+  variable: '--font-pretendard',
+});
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
+    <html lang="en" className={pretendard.variable}>
       <body className="min-h-screen flex flex-col">
         <ReactQueryProvider>
           {children}

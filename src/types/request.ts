@@ -12,3 +12,7 @@ export type Non = object;
 export interface ProductListRequest {
   categoryId: string;
 }
+
+export interface ProductDetailRequest {
+  productId: string;
+}

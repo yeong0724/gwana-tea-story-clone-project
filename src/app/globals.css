@@ -161,6 +161,19 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family:
+      var(--font-pretendard),
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      'Roboto',
+      'Oxygen',
+      'Ubuntu',
+      'Cantarell',
+      'Fira Sans',
+      'Droid Sans',
+      'Helvetica Neue',
+      sans-serif;
   }
   button {
     @apply transition-all active:scale-[0.9];

@@ -1,21 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getProductList } from '@/api/product';
+import { getProductDetail, getProductList } from '@/api/product';
+import { ProductDetailRequest, ProductListRequest } from '@/types';
 import { UseQueryOptionsType } from '@/types/type';
 
 const useProductService = () => {
-  const useProductListQuery = <T extends { categoryId?: string }>(
-    payload: T,
-    options?: UseQueryOptionsType
-  ) => {
+  const useProductListQuery = (payload: ProductListRequest, options?: UseQueryOptionsType) => {
     return useQuery({
       queryKey: ['productList', payload.categoryId],
-      queryFn: () => getProductList<T>(payload),
+      queryFn: () => getProductList(payload),
       ...options,
     });
   };
 
-  return { useProductListQuery };
+  const useProductDetailQuery = (payload: ProductDetailRequest, options?: UseQueryOptionsType) => {
+    return useQuery({
+      queryKey: ['productList', payload.productId],
+      queryFn: () => getProductDetail(payload),
+      ...options,
+    });
+  };
+
+  return { useProductListQuery, useProductDetailQuery };
 };
 
 export default useProductService;
