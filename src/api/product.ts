@@ -20,8 +20,6 @@ const getProductList = async (params: ProductListRequest) => {
 };
 
 const getProductDetail = async (params: ProductDetailRequest) => {
-  await delayAsync();
-
   const { productId } = params;
 
   return {
