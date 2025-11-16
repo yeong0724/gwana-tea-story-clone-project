@@ -48,7 +48,7 @@ const Footer = () => {
               </span>
             </div>
             <div>
-              <span className="font-bold">사업자등록번호: 000-00-00000</span>
+              <span className="font-bold">사업자등록번호: 613-19-89889</span>
             </div>
             <div className="flex flex-col items-start">
               <span className="text-gray-500">Copyright © Ganna Tea House.</span>
